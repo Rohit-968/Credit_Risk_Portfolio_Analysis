@@ -1,0 +1,2457 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Credit Risk Portfolio — Executive Dashboard & Simulator</title>
+  
+  <!-- Embedded Styles to ensure 100% functionality when double-clicked from ZIP or offline -->
+  <style>
+    /* McKinsey Credit Risk Dashboard Stylesheet */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --primary-navy: #0F1E36;
+      --primary-navy-rgb: 15, 30, 54;
+      --secondary-teal: #00A3A6;
+      --secondary-teal-rgb: 0, 163, 166;
+      --accent-gold: #D8961B;
+      --accent-gold-rgb: 216, 150, 27;
+      
+      --bg-main: #F4F6F9;
+      --bg-card: #FFFFFF;
+      --border-color: #E2E8F0;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      
+      --risk-high: #C53030;
+      --risk-high-bg: #FFF5F5;
+      --risk-low: #2F855A;
+      --risk-low-bg: #F0FFF4;
+      
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
+      
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg-main: #0B0F19;
+      --bg-card: #131A26;
+      --border-color: #1E293B;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+      transition: var(--transition-smooth);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Outfit', sans-serif;
+      color: var(--primary-navy);
+      font-weight: 600;
+    }
+
+    [data-theme="dark"] h1, 
+    [data-theme="dark"] h2, 
+    [data-theme="dark"] h3, 
+    [data-theme="dark"] h4, 
+    [data-theme="dark"] h5, 
+    [data-theme="dark"] h6 {
+      color: #FFFFFF;
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: var(--primary-navy);
+      color: #FFFFFF;
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid var(--secondary-teal);
+      box-shadow: var(--shadow-md);
+    }
+
+    .header-title-area h1 {
+      color: #FFFFFF;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .header-title-area p {
+      color: var(--secondary-teal);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 0.1rem;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .theme-toggle-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #FFFFFF;
+      padding: 0.5rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+    }
+
+    .theme-toggle-btn:hover {
+      background-color: rgba(255,255,255,0.1);
+      border-color: var(--secondary-teal);
+    }
+
+    .tabs-navigation {
+      background-color: var(--bg-card);
+      padding: 0 2rem;
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      z-index: 10;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition-smooth);
+    }
+
+    .tab-btn:hover {
+      color: var(--primary-navy);
+    }
+
+    [data-theme="dark"] .tab-btn:hover {
+      color: #FFFFFF;
+    }
+
+    .tab-btn.active {
+      color: var(--primary-navy);
+      font-weight: 600;
+    }
+
+    [data-theme="dark"] .tab-btn.active {
+      color: var(--secondary-teal);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: var(--secondary-teal);
+    }
+
+    .kpi-banner {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+
+    .kpi-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition-smooth);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(0, 163, 166, 0.4);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background-color: var(--primary-navy);
+    }
+
+    .kpi-card.kpi-teal::before { background-color: var(--secondary-teal); }
+    .kpi-card.kpi-gold::before { background-color: var(--accent-gold); }
+    .kpi-card.kpi-risk::before { background-color: var(--risk-high); }
+
+    .kpi-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .kpi-value-container {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+
+    .kpi-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--primary-navy);
+      line-height: 1;
+    }
+
+    [data-theme="dark"] .kpi-value {
+      color: #FFFFFF;
+    }
+
+    .kpi-change {
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.15rem;
+    }
+
+    .kpi-change.positive { color: var(--risk-low); }
+    .kpi-change.negative { color: var(--risk-high); }
+    .kpi-change.neutral { color: var(--text-muted); }
+
+    .main-content {
+      flex: 1;
+      padding: 0 2rem 2rem 2rem;
+      position: relative;
+    }
+
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .insights-strip {
+      background: linear-gradient(135deg, rgba(15, 30, 54, 0.03) 0%, rgba(0, 163, 166, 0.03) 100%);
+      border: 1px solid var(--border-color);
+      border-left: 5px solid var(--primary-navy);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    [data-theme="dark"] .insights-strip {
+      background: linear-gradient(135deg, rgba(15, 30, 54, 0.2) 0%, rgba(0, 163, 166, 0.1) 100%);
+      border-left: 5px solid var(--secondary-teal);
+    }
+
+    .insights-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      font-size: 1.05rem;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 0.75rem;
+      color: var(--primary-navy);
+    }
+
+    [data-theme="dark"] .insights-title {
+      color: var(--secondary-teal);
+    }
+
+    .insights-content ul {
+      list-style: none;
+    }
+
+    .insights-content li {
+      position: relative;
+      padding-left: 1.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .insights-content li:last-child {
+      margin-bottom: 0;
+    }
+
+    .insights-content li::before {
+      content: "▪";
+      position: absolute;
+      left: 0.25rem;
+      color: var(--secondary-teal);
+      font-size: 1.1rem;
+      top: -0.1rem;
+    }
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+
+    .grid-3col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .grid-simulator {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-2col, .grid-3col, .grid-simulator {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 2rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 320px;
+      width: 100%;
+    }
+
+    .simulator-panel {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-md);
+      align-self: start;
+    }
+
+    .control-group {
+      margin-bottom: 2rem;
+    }
+
+    .control-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .control-label-area {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .control-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--primary-navy);
+    }
+
+    [data-theme="dark"] .control-label {
+      color: #FFFFFF;
+    }
+
+    .control-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--secondary-teal);
+      background-color: rgba(0, 163, 166, 0.1);
+      padding: 0.2rem 0.5rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .slider-input {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border-color);
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--secondary-teal);
+      cursor: pointer;
+      border: 2px solid #FFFFFF;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition-smooth);
+    }
+
+    .slider-input::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: var(--primary-navy);
+    }
+
+    .slider-ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .financial-card {
+      background: linear-gradient(135deg, var(--primary-navy) 0%, #1A2F50 100%);
+      color: #FFFFFF;
+      border: none;
+    }
+
+    .financial-card h3, .financial-card h4 {
+      color: #FFFFFF;
+    }
+
+    .financial-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .financial-item {
+      border-left: 2px solid var(--secondary-teal);
+      padding-left: 1rem;
+    }
+
+    .financial-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 0.25rem;
+    }
+
+    .financial-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .financial-total {
+      grid-column: span 2;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 1rem;
+      margin-top: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .financial-total-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--secondary-teal);
+    }
+
+    .matrix-description {
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .matrix-grid-wrapper {
+      overflow-x: auto;
+    }
+
+    .matrix-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 4px;
+    }
+
+    .matrix-th-y {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: right;
+      padding: 0.5rem 1rem;
+      vertical-align: middle;
+      font-weight: 600;
+      width: 120px;
+    }
+
+    .matrix-th-x {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 0.5rem;
+      font-weight: 600;
+    }
+
+    .matrix-cell {
+      aspect-ratio: 16/9;
+      text-align: center;
+      padding: 1rem 0.5rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .matrix-cell:hover {
+      transform: scale(1.03);
+      box-shadow: var(--shadow-md);
+      z-index: 5;
+    }
+
+    .matrix-cell-rate {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .matrix-cell-count {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.85);
+      margin-top: 0.15rem;
+    }
+
+    .risk-cat-veryhigh { background-color: #9B2C2C; }
+    .risk-cat-high { background-color: #C53030; }
+    .risk-cat-medhigh { background-color: #DD6B20; }
+    .risk-cat-medium { background-color: #D69E2E; }
+    .risk-cat-low { background-color: #38A169; }
+
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.6rem 1rem 0.6rem 2.25rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      background-color: var(--bg-card);
+      color: var(--text-main);
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .search-input:focus {
+      border-color: var(--secondary-teal);
+      box-shadow: 0 0 0 3px rgba(0, 163, 166, 0.15);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .table-filters {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .select-filter {
+      padding: 0.6rem 1.5rem 0.6rem 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background-color: var(--bg-card);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .select-filter:focus {
+      border-color: var(--secondary-teal);
+    }
+
+    .btn-primary {
+      background-color: var(--secondary-teal);
+      color: #FFFFFF;
+      border: none;
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-primary:hover {
+      background-color: #008486;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+
+    .data-table th {
+      background-color: rgba(15, 30, 54, 0.02);
+      padding: 0.75rem 1rem;
+      font-weight: 700;
+      color: var(--primary-navy);
+      border-bottom: 2px solid var(--border-color);
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    [data-theme="dark"] .data-table th {
+      background-color: rgba(255,255,255,0.02);
+      color: #FFFFFF;
+    }
+
+    .data-table th.sort-asc::after {
+      content: ' ▲';
+      font-size: 0.65rem;
+      position: absolute;
+      right: 0.25rem;
+    }
+
+    .data-table th.sort-desc::after {
+      content: ' ▼';
+      font-size: 0.65rem;
+      position: absolute;
+      right: 0.25rem;
+    }
+
+    .data-table td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background-color: rgba(0, 163, 166, 0.03);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-risk-high {
+      background-color: var(--risk-high-bg);
+      color: var(--risk-high);
+    }
+
+    .badge-risk-low {
+      background-color: var(--risk-low-bg);
+      color: var(--risk-low);
+    }
+
+    .badge-fraud {
+      background-color: #FFF3CD;
+      color: #856404;
+      border: 1px solid #FFEBA8;
+    }
+
+    .pagination-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+    }
+
+    .pagination-info {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .pagination-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-pagination {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-pagination:hover:not(:disabled) {
+      border-color: var(--secondary-teal);
+      color: var(--secondary-teal);
+    }
+
+    .btn-pagination:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-color);
+      background-color: var(--bg-card);
+      margin-top: auto;
+    }
+    
+    /* Offline Mode Warning Banner */
+    .offline-banner {
+      background-color: #E2E8F0;
+      color: #334155;
+      padding: 0.5rem 2rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    [data-theme="dark"] .offline-banner {
+      background-color: #1E293B;
+      color: #94A3B8;
+    }
+  </style>
+  
+  <!-- Chart.js CDN for modern data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Offline Indicator Banner (hidden by default) -->
+    <div id="offlineBanner" class="offline-banner" style="display: none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.5M5 12.5a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 8.38-3.79M12 20h.01"></path>
+      </svg>
+      Offline Mode: Chart.js CDN is unavailable. Displaying custom CSS-based visual graphs.
+    </div>
+
+    <!-- Top McKinsey Branding Header -->
+    <header>
+      <div class="header-title-area">
+        <h1>CREDIT RISK PORTFOLIO — EXECUTIVE DASHBOARD</h1>
+        <p>Retail Banking Book | 5,000 Customer Accounts | Risk & Credit Committee Briefing</p>
+      </div>
+      <div class="header-controls">
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
+          <!-- Sun Icon -->
+          <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <!-- Moon Icon -->
+          <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Tabbed Navigation Bar -->
+    <nav class="tabs-navigation">
+      <button class="tab-btn active" data-tab="overviewTab">Overview Dashboard</button>
+      <button class="tab-btn" data-tab="simulatorTab">Policy Simulator</button>
+      <button class="tab-btn" data-tab="cohortTab">Risk Cohort Matrix</button>
+      <button class="tab-btn" data-tab="explorerTab">Portfolio Data Explorer</button>
+    </nav>
+
+    <!-- Global KPI Banner -->
+    <div class="kpi-banner">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Customers</div>
+        <div class="kpi-value-container">
+          <div id="kpiTotalCustomers" class="kpi-value">5,000</div>
+          <div id="kpiTotalCustomersChange" class="kpi-change neutral">Baseline</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-risk">
+        <div class="kpi-label">High-Risk Share</div>
+        <div class="kpi-value-container">
+          <div id="kpiHighRiskShare" class="kpi-value">76.6%</div>
+          <div id="kpiHighRiskShareChange" class="kpi-change neutral">Baseline</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-teal">
+        <div class="kpi-label">Avg Credit Score</div>
+        <div class="kpi-value-container">
+          <div id="kpiAvgScore" class="kpi-value">599</div>
+          <div id="kpiAvgScoreChange" class="kpi-change neutral">Baseline</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-gold">
+        <div class="kpi-label">Avg Debt-To-Income</div>
+        <div class="kpi-value-container">
+          <div id="kpiAvgDti" class="kpi-value">29.7%</div>
+          <div id="kpiAvgDtiChange" class="kpi-change neutral">Baseline</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-risk">
+        <div class="kpi-label">Fraud Incidence</div>
+        <div class="kpi-value-container">
+          <div id="kpiFraudIncidence" class="kpi-value">2.9%</div>
+          <div id="kpiFraudIncidenceChange" class="kpi-change neutral">Baseline</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main View Section -->
+    <main class="main-content">
+
+      <!-- ================= TAB 1: OVERVIEW ================= -->
+      <div id="overviewTab" class="tab-pane active">
+        <div class="insights-strip">
+          <div class="insights-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Key Underwriting Findings & Portfolio Thesis
+          </div>
+          <div class="insights-content">
+            <ul>
+              <li><strong>Late payment history is the dominant driver</strong> of risk classification. Customers with 4+ late payments are flagged high-risk in ~97% of cases, compared to ~53% for customers with 0-3 late payments.</li>
+              <li><strong>Credit score remains the strongest underwriting signal</strong>: the 'Poor' band (&lt;580) is almost universally high-risk (99.5%), while bands 580+ show comparable ~53-57% risk rates, suggesting a binary cut is optimal.</li>
+              <li><strong>Risk rates are broadly stable across demographics</strong>: segmentation should prioritize behavioral/payment signals (late payments, scores) over age and employment status.</li>
+              <li><strong>Fraud incidence (2.9% overall) is concentrated entirely</strong> within the high-risk segment, reinforcing late payments and credit score as compounding underwriting red flags.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Risk Rate by Credit Score Band</h3>
+                <div class="card-subtitle">Underwriting signal strength across scoring brackets</div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="creditScoreChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Risk Rate by Late Payment Count</h3>
+                <div class="card-subtitle">Behavioral risk concentration by late payment buckets</div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="latePaymentsChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Customer Mix by Employment Status</h3>
+                <div class="card-subtitle">Employment distribution within the total portfolio</div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="employmentMixChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3 class="card-title">Risk Rate by Age Band</h3>
+                <div class="card-subtitle">Stability of risk flags across borrower demographic bands</div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="ageBandChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 2: POLICY SIMULATOR ================= -->
+      <div id="simulatorTab" class="tab-pane">
+        <div class="grid-simulator">
+          <div class="simulator-panel">
+            <h3 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Underwriting Policies</h3>
+            
+            <div class="control-group">
+              <div class="control-label-area">
+                <span class="control-label">Min Credit Score Cutoff</span>
+                <span id="sliderScoreVal" class="control-value">300</span>
+              </div>
+              <input id="sliderScore" type="range" min="300" max="800" step="10" value="300" class="slider-input">
+              <div class="slider-ticks">
+                <span>300 (Poor)</span>
+                <span>580 (Fair)</span>
+                <span>800 (Exceptional)</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-label-area">
+                <span class="control-label">Max Allowed Late Payments</span>
+                <span id="sliderLateVal" class="control-value">6</span>
+              </div>
+              <input id="sliderLate" type="range" min="0" max="6" step="1" value="6" class="slider-input">
+              <div class="slider-ticks">
+                <span>0</span>
+                <span>2</span>
+                <span>4</span>
+                <span>6 (None)</span>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-label-area">
+                <span class="control-label">Max Debt-To-Income Cutoff</span>
+                <span id="sliderDtiVal" class="control-value">80%</span>
+              </div>
+              <input id="sliderDti" type="range" min="15" max="80" step="5" value="80" class="slider-input">
+              <div class="slider-ticks">
+                <span>15%</span>
+                <span>45%</span>
+                <span>80% (None)</span>
+              </div>
+            </div>
+
+            <button id="resetPolicyBtn" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 1.5rem; background-color: var(--primary-navy);">
+              Reset to Baseline (No Cuts)
+            </button>
+          </div>
+
+          <div>
+            <div class="card financial-card">
+              <h3 class="card-title" style="margin-bottom: 0.5rem;">Strategic Portfolio Impact Analysis</h3>
+              <p style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-bottom: 1.5rem;">Simulated financial outcomes and trade-offs of the active credit policy</p>
+              
+              <div class="financial-grid">
+                <div class="financial-item">
+                  <div class="financial-label">Approval Rate</div>
+                  <div id="simApprovalRate" class="financial-value">100.0%</div>
+                </div>
+                <div class="financial-item">
+                  <div class="financial-label">Approved Customers</div>
+                  <div id="simApprovedCount" class="financial-value">5,000</div>
+                </div>
+                <div class="financial-item">
+                  <div class="financial-label">Est. Default Rate (Approved)</div>
+                  <div id="simDefaultRate" class="financial-value">76.6%</div>
+                </div>
+                <div class="financial-item">
+                  <div class="financial-label">Est. Fraud Incidence</div>
+                  <div id="simFraudRate" class="financial-value">2.9%</div>
+                </div>
+                
+                <div class="financial-total">
+                  <div>
+                    <h4 style="font-size: 0.95rem; font-weight: 600;">Net Portfolio Operating Margin</h4>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem;">Revenue from low-risk minus defaults, fraud losses & opportunity cost</p>
+                  </div>
+                  <div id="simNetMargin" class="financial-total-val">-$1,712,500</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="insights-strip" style="margin-bottom: 2rem;">
+              <div class="insights-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                  <polyline points="2 17 12 22 22 17"></polyline>
+                  <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+                McKinsey Strategy Recommendation Engine
+              </div>
+              <div id="dynamicRecommendationText" class="insights-content" style="font-size: 0.95rem; font-style: italic;">
+                Analyzing policy combination...
+              </div>
+            </div>
+
+            <div class="grid-2col" style="margin-bottom: 0;">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Credit Score Distribution</h3>
+                </div>
+                <div class="chart-container">
+                  <canvas id="simScoreDistChart"></canvas>
+                </div>
+              </div>
+              
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Portfolio Risk Exposure</h3>
+                </div>
+                <div class="chart-container">
+                  <canvas id="simRiskVolumeChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 3: COHORT MATRIX ================= -->
+      <div id="cohortTab" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Risk Cohort Matrix (Late Payments vs. Credit Score)</h3>
+              <div class="card-subtitle">Identifying pockets of high risk to define optimal policy bounds</div>
+            </div>
+          </div>
+          
+          <div class="matrix-description">
+            <p>This heat map cross-references **Credit Score Bands (Y-Axis)** and **Late Payment Counts (X-Axis)**. The cell percentage indicates the **High-Risk Rate** in that cohort, while the number below it represents the total customer count. Cells colored in deep red indicate critical segments that should be targeted for policy rejection.</p>
+          </div>
+
+          <div class="matrix-grid-wrapper">
+            <table class="matrix-table">
+              <thead>
+                <tr>
+                  <th class="matrix-th-y">Credit / Late</th>
+                  <th class="matrix-th-x">0 Late</th>
+                  <th class="matrix-th-x">1 Late</th>
+                  <th class="matrix-th-x">2 Late</th>
+                  <th class="matrix-th-x">3 Late</th>
+                  <th class="matrix-th-x">4 Late</th>
+                  <th class="matrix-th-x">5 Late</th>
+                  <th class="matrix-th-x">6 Late</th>
+                </tr>
+              </thead>
+              <tbody id="matrixBody">
+                <!-- Dynamically Generated -->
+              </tbody>
+            </table>
+          </div>
+          
+          <div style="display: flex; gap: 1.5rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+              <div class="risk-cat-low" style="width: 20px; height: 15px; border-radius: 2px;"></div>
+              <span>Low Risk (&lt; 30%)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+              <div class="risk-cat-medium" style="width: 20px; height: 15px; border-radius: 2px;"></div>
+              <span>Medium Risk (30% - 50%)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+              <div class="risk-cat-medhigh" style="width: 20px; height: 15px; border-radius: 2px;"></div>
+              <span>Elevated Risk (50% - 75%)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+              <div class="risk-cat-high" style="width: 20px; height: 15px; border-radius: 2px;"></div>
+              <span>High Risk (75% - 90%)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+              <div class="risk-cat-veryhigh" style="width: 20px; height: 15px; border-radius: 2px;"></div>
+              <span>Critical Risk (&gt; 90%)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 4: DATA EXPLORER ================= -->
+      <div id="explorerTab" class="tab-pane">
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">Portfolio Account Explorer</h3>
+              <div class="card-subtitle">Deep dive into underlying customer accounts and simulated actions</div>
+            </div>
+          </div>
+
+          <div class="table-toolbar">
+            <div class="search-input-wrapper">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input id="tableSearchInput" type="text" placeholder="Search by Customer ID (e.g., C0015)..." class="search-input">
+            </div>
+
+            <div class="table-filters">
+              <select id="filterRisk" class="select-filter">
+                <option value="all">All Risk Flags</option>
+                <option value="high">High Risk Only</option>
+                <option value="low">Low Risk Only</option>
+              </select>
+
+              <select id="filterEmployment" class="select-filter">
+                <option value="all">All Employment</option>
+                <option value="Employed">Employed</option>
+                <option value="Self-Employed">Self-Employed</option>
+                <option value="Unemployed">Unemployed</option>
+              </select>
+
+              <select id="filterSimAction" class="select-filter">
+                <option value="all">All Simulated Actions</option>
+                <option value="approved">Simulated Approved</option>
+                <option value="rejected">Simulated Rejected</option>
+              </select>
+
+              <button id="btnExportCSV" class="btn-primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th id="th-id" class="sort-asc">ID</th>
+                  <th id="th-age">Age</th>
+                  <th id="th-employment">Employment</th>
+                  <th id="th-creditScore">Credit Score</th>
+                  <th id="th-dti">DTI</th>
+                  <th id="th-latePayments">Late Payments</th>
+                  <th id="th-highRiskFlag">Risk Flag</th>
+                  <th id="th-fraudFlag">Fraud</th>
+                  <th id="th-simulatedAction">Simulated Action</th>
+                </tr>
+              </thead>
+              <tbody id="explorerTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-controls">
+            <div id="paginationInfo" class="pagination-info">Showing 1 to 15 of 5,000 entries</div>
+            <div class="pagination-buttons">
+              <button id="btnPrevPage" class="btn-pagination" disabled>Previous</button>
+              <button id="btnNextPage" class="btn-pagination">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>&copy; 2026 Credit Risk Advisory Service | Confidential Client Presentation (Retail Banking Group)</p>
+      <p style="font-size: 0.7rem; margin-top: 0.25rem; color: var(--text-muted);">This application is a simulated executive dashboard designed to model underwriting risk policies. Standard NPV assumptions apply.</p>
+    </footer>
+  </div>
+
+  <!-- JavaScript Scripts Consolidated Below -->
+  <script>
+    // --- PART 1: DATA GENERATOR ---
+    // Seeded random number generator (Mulberry32)
+    function createRandom(seed) {
+      let h = seed;
+      return function() {
+        let t = h += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function generateDataset() {
+      const rand = createRandom(42);
+      const N = 5000;
+      const customers = [];
+
+      const empStatuses = [];
+      for (let i = 0; i < 1750; i++) empStatuses.push('Employed');
+      for (let i = 0; i < 1650; i++) empStatuses.push('Self-Employed');
+      for (let i = 0; i < 1600; i++) empStatuses.push('Unemployed');
+
+      // Shuffle
+      for (let i = empStatuses.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        const temp = empStatuses[i];
+        empStatuses[i] = empStatuses[j];
+        empStatuses[j] = temp;
+      }
+
+      for (let i = 0; i < N; i++) {
+        let latePayments = 0;
+        const rLate = rand();
+        if (rLate < 0.12) latePayments = 0;
+        else if (rLate < 0.24) latePayments = 1;
+        else if (rLate < 0.36) latePayments = 2;
+        else if (rLate < 0.49) latePayments = 3;
+        else if (rLate < 0.68) latePayments = 4;
+        else if (rLate < 0.85) latePayments = 5;
+        else latePayments = 6;
+
+        let creditScore = 0;
+        const rScore = rand();
+        if (rScore < 0.48) {
+          creditScore = Math.floor(350 + rand() * 229);
+        } else {
+          const rBand = rand();
+          if (rBand < 0.4) creditScore = Math.floor(580 + rand() * 90);
+          else if (rBand < 0.7) creditScore = Math.floor(670 + rand() * 70);
+          else if (rBand < 0.9) creditScore = Math.floor(740 + rand() * 60);
+          else creditScore = Math.floor(800 + rand() * 51);
+        }
+
+        let age = 18;
+        const rAge = rand();
+        if (rAge < 0.18) age = Math.floor(18 + rand() * 8);
+        else if (rAge < 0.40) age = Math.floor(26 + rand() * 10);
+        else if (rAge < 0.60) age = Math.floor(36 + rand() * 10);
+        else if (rAge < 0.78) age = Math.floor(46 + rand() * 10);
+        else if (rAge < 0.93) age = Math.floor(56 + rand() * 10);
+        else age = Math.floor(66 + rand() * 15);
+
+        let dti = Math.round(29.7 + (rand() - 0.5) * 30 + (rand() - 0.5) * 15);
+        dti = Math.max(5, Math.min(65, dti));
+
+        customers.push({
+          id: `C${String(i + 1).padStart(4, '0')}`,
+          age,
+          employmentStatus: empStatuses[i],
+          creditScore,
+          dti,
+          latePayments,
+          highRiskFlag: false,
+          fraudFlag: false
+        });
+      }
+
+      let highRiskCount = 0;
+      const potentialHighRiskIndices = [];
+      const forcedHighRiskIndices = new Set();
+
+      customers.forEach((c, idx) => {
+        if (c.creditScore < 580 || c.latePayments >= 4) {
+          forcedHighRiskIndices.add(idx);
+          c.highRiskFlag = true;
+          highRiskCount++;
+        } else {
+          potentialHighRiskIndices.push(idx);
+        }
+      });
+
+      const targetHighRisk = 3830;
+      if (highRiskCount < targetHighRisk) {
+        for (let i = potentialHighRiskIndices.length - 1; i > 0; i--) {
+          const j = Math.floor(rand() * (i + 1));
+          const temp = potentialHighRiskIndices[i];
+          potentialHighRiskIndices[i] = potentialHighRiskIndices[j];
+          potentialHighRiskIndices[j] = temp;
+        }
+        const diff = targetHighRisk - highRiskCount;
+        for (let i = 0; i < diff; i++) {
+          const pIdx = potentialHighRiskIndices[i];
+          if (pIdx !== undefined && customers[pIdx]) {
+            customers[pIdx].highRiskFlag = true;
+          }
+        }
+      } else if (highRiskCount > targetHighRisk) {
+        const forcedArr = Array.from(forcedHighRiskIndices);
+        forcedArr.sort((a, b) => customers[b].creditScore - customers[a].creditScore);
+        const diff = highRiskCount - targetHighRisk;
+        for (let i = 0; i < diff; i++) {
+          const fIdx = forcedArr[i];
+          if (fIdx !== undefined && customers[fIdx]) {
+            customers[fIdx].highRiskFlag = false;
+          }
+        }
+      }
+
+      const highRiskIndices = [];
+      customers.forEach((c, idx) => {
+        if (c.highRiskFlag) highRiskIndices.push(idx);
+      });
+
+      for (let i = highRiskIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        const temp = highRiskIndices[i];
+        highRiskIndices[i] = highRiskIndices[j];
+        highRiskIndices[j] = temp;
+      }
+
+      const targetFraud = 145;
+      for (let i = 0; i < targetFraud; i++) {
+        const fIdx = highRiskIndices[i];
+        if (fIdx !== undefined && customers[fIdx]) {
+          customers[fIdx].fraudFlag = true;
+        }
+      }
+
+      // Exact sum matching
+      let currentScoreSum = customers.reduce((sum, c) => sum + c.creditScore, 0);
+      let scoreDiff = 2995000 - currentScoreSum;
+      let scoreLimitLoop = 0;
+      while (scoreDiff !== 0 && scoreLimitLoop < 100000) {
+        scoreLimitLoop++;
+        const step = scoreDiff > 0 ? 1 : -1;
+        const idx = Math.floor(rand() * N);
+        const original = customers[idx].creditScore;
+        const nextVal = original + step;
+        if (nextVal >= 300 && nextVal <= 850) {
+          if ((original < 580 && nextVal < 580) || (original >= 580 && nextVal >= 580)) {
+            customers[idx].creditScore = nextVal;
+            scoreDiff -= step;
+          }
+        }
+      }
+
+      let currentDtiSum = customers.reduce((sum, c) => sum + c.dti, 0);
+      let dtiDiff = 148500 - currentDtiSum;
+      let dtiLimitLoop = 0;
+      while (dtiDiff !== 0 && dtiLimitLoop < 100000) {
+        dtiLimitLoop++;
+        const step = dtiDiff > 0 ? 1 : -1;
+        const idx = Math.floor(rand() * N);
+        const nextVal = customers[idx].dti + step;
+        if (nextVal >= 5 && nextVal <= 80) {
+          customers[idx].dti = nextVal;
+          dtiDiff -= step;
+        }
+      }
+
+      return customers;
+    }
+  </script>
+
+  <script>
+    // --- PART 2: APP CONTROLLER & OFFLINE CHART FALLBACKS ---
+    document.addEventListener('DOMContentLoaded', () => {
+      // DOM Elements Cache
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const tabs = document.querySelectorAll('.tab-btn');
+      const tabPanes = document.querySelectorAll('.tab-pane');
+      
+      const kpiTotalCustomers = document.getElementById('kpiTotalCustomers');
+      const kpiTotalCustomersChange = document.getElementById('kpiTotalCustomersChange');
+      const kpiHighRiskShare = document.getElementById('kpiHighRiskShare');
+      const kpiHighRiskShareChange = document.getElementById('kpiHighRiskShareChange');
+      const kpiAvgScore = document.getElementById('kpiAvgScore');
+      const kpiAvgScoreChange = document.getElementById('kpiAvgScoreChange');
+      const kpiAvgDti = document.getElementById('kpiAvgDti');
+      const kpiAvgDtiChange = document.getElementById('kpiAvgDtiChange');
+      const kpiFraudIncidence = document.getElementById('kpiFraudIncidence');
+      const kpiFraudIncidenceChange = document.getElementById('kpiFraudIncidenceChange');
+
+      const sliderScore = document.getElementById('sliderScore');
+      const sliderScoreVal = document.getElementById('sliderScoreVal');
+      const sliderLate = document.getElementById('sliderLate');
+      const sliderLateVal = document.getElementById('sliderLateVal');
+      const sliderDti = document.getElementById('sliderDti');
+      const sliderDtiVal = document.getElementById('sliderDtiVal');
+      const resetPolicyBtn = document.getElementById('resetPolicyBtn');
+
+      const simApprovalRate = document.getElementById('simApprovalRate');
+      const simApprovedCount = document.getElementById('simApprovedCount');
+      const simDefaultRate = document.getElementById('simDefaultRate');
+      const simFraudRate = document.getElementById('simFraudRate');
+      const simNetMargin = document.getElementById('simNetMargin');
+      const dynamicRecommendationText = document.getElementById('dynamicRecommendationText');
+
+      const explorerTableBody = document.getElementById('explorerTableBody');
+      const tableSearchInput = document.getElementById('tableSearchInput');
+      const filterRisk = document.getElementById('filterRisk');
+      const filterEmployment = document.getElementById('filterEmployment');
+      const filterSimAction = document.getElementById('filterSimAction');
+      const btnExportCSV = document.getElementById('btnExportCSV');
+      const paginationInfo = document.getElementById('paginationInfo');
+      const btnPrevPage = document.getElementById('btnPrevPage');
+      const btnNextPage = document.getElementById('btnNextPage');
+
+      // Safe Theme Check - Prevents crash under file:// protocol SecurityError
+      let activeTheme = 'light';
+      try {
+        activeTheme = localStorage.getItem('theme') || 'light';
+      } catch (e) {
+        console.warn('localStorage read blocked by security policies (likely file:// scheme). Defaulting to light theme.');
+      }
+      
+      document.documentElement.setAttribute('data-theme', activeTheme);
+      updateThemeIcon(activeTheme);
+
+      // Financial coefficients
+      const PROFIT_LOW_RISK = 1200;
+      const LOSS_HIGH_RISK = -800;
+      const LOSS_FRAUD = -6000;
+
+      // Check for Chart.js availability
+      const isChartAvailable = typeof Chart !== 'undefined';
+      if (!isChartAvailable) {
+        const banner = document.getElementById('offlineBanner');
+        if (banner) banner.style.display = 'flex';
+      }
+
+      // Generate Dataset
+      let dataset = [];
+      try {
+        dataset = generateDataset();
+      } catch (err) {
+        console.error('Error generating dataset:', err);
+      }
+
+      let currentFilteredDataset = [];
+      let activeTab = 'overviewTab';
+      let tablePage = 1;
+      const tablePageSize = 15;
+      let sortColumn = 'id';
+      let sortDirection = 'asc';
+
+      let creditScoreChart = null;
+      let latePaymentsChart = null;
+      let employmentMixChart = null;
+      let ageBandChart = null;
+      let simScoreDistChart = null;
+      let simRiskVolumeChart = null;
+
+      // Offline HTML/CSS Graph Renderer Fallback
+      function renderOfflineChartFallback(canvasId, labels, data, color) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const parent = canvas.parentElement;
+        parent.innerHTML = '';
+        
+        const chartDiv = document.createElement('div');
+        chartDiv.style.display = 'flex';
+        chartDiv.style.alignItems = 'flex-end';
+        chartDiv.style.justifyContent = 'space-around';
+        chartDiv.style.height = '100%';
+        chartDiv.style.padding = '1rem 0';
+        
+        const maxVal = Math.max(...data, 1) || 100;
+        
+        data.forEach((val, idx) => {
+          const barCol = document.createElement('div');
+          barCol.style.display = 'flex';
+          barCol.style.flexDirection = 'column';
+          barCol.style.alignItems = 'center';
+          barCol.style.width = `${Math.max(10, 80 / data.length)}%`;
+          barCol.style.height = '100%';
+          barCol.style.justifyContent = 'flex-end';
+          
+          const valLabel = document.createElement('span');
+          valLabel.textContent = `${val}%`;
+          valLabel.style.fontSize = '0.75rem';
+          valLabel.style.fontWeight = 'bold';
+          valLabel.style.marginBottom = '0.25rem';
+          valLabel.style.color = 'var(--text-main)';
+          
+          const bar = document.createElement('div');
+          const heightPercent = (val / maxVal) * 80;
+          bar.style.height = `${Math.max(4, heightPercent)}%`;
+          bar.style.width = '100%';
+          bar.style.backgroundColor = color;
+          bar.style.borderRadius = '4px';
+          
+          const label = document.createElement('span');
+          label.textContent = labels[idx];
+          label.style.fontSize = '0.7rem';
+          label.style.color = 'var(--text-muted)';
+          label.style.marginTop = '0.5rem';
+          label.style.textAlign = 'center';
+          label.style.whiteSpace = 'nowrap';
+          label.style.overflow = 'hidden';
+          label.style.textOverflow = 'ellipsis';
+          label.style.width = '100%';
+          
+          barCol.appendChild(valLabel);
+          barCol.appendChild(bar);
+          barCol.appendChild(label);
+          chartDiv.appendChild(barCol);
+        });
+        
+        parent.appendChild(chartDiv);
+      }
+
+      function renderOfflineDonutFallback(canvasId, labels, data, colorsList) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const parent = canvas.parentElement;
+        parent.innerHTML = '';
+        
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.justifyContent = 'center';
+        container.style.height = '100%';
+        container.style.gap = '0.75rem';
+        container.style.padding = '1rem';
+        
+        const total = data.reduce((sum, val) => sum + val, 0) || 1;
+        
+        data.forEach((val, idx) => {
+          const row = document.createElement('div');
+          row.style.display = 'flex';
+          row.style.alignItems = 'center';
+          row.style.gap = '1rem';
+          
+          const label = document.createElement('span');
+          label.textContent = labels[idx];
+          label.style.width = '100px';
+          label.style.fontSize = '0.8rem';
+          label.style.fontWeight = '600';
+          
+          const barWrapper = document.createElement('div');
+          barWrapper.style.flex = '1';
+          barWrapper.style.height = '16px';
+          barWrapper.style.backgroundColor = 'var(--border-color)';
+          barWrapper.style.borderRadius = '8px';
+          barWrapper.style.overflow = 'hidden';
+          
+          const bar = document.createElement('div');
+          const pct = ((val / total) * 100).toFixed(1);
+          bar.style.width = `${pct}%`;
+          bar.style.height = '100%';
+          bar.style.backgroundColor = colorsList[idx];
+          barWrapper.appendChild(bar);
+          
+          const valLabel = document.createElement('span');
+          valLabel.textContent = `${val.toLocaleString()} (${pct}%)`;
+          valLabel.style.fontSize = '0.8rem';
+          valLabel.style.width = '120px';
+          valLabel.style.color = 'var(--text-muted)';
+          
+          row.appendChild(label);
+          row.appendChild(barWrapper);
+          row.appendChild(valLabel);
+          container.appendChild(row);
+        });
+        
+        parent.appendChild(container);
+      }
+
+      function renderOfflineComparisonFallback(canvasId, labels, dataBaseline, dataSim, color) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const parent = canvas.parentElement;
+        parent.innerHTML = '';
+        
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '0.6rem';
+        container.style.padding = '0.5rem';
+        container.style.overflowY = 'auto';
+        container.style.height = '100%';
+
+        const maxVal = Math.max(...dataBaseline, 1);
+
+        labels.forEach((label, idx) => {
+          const row = document.createElement('div');
+          row.style.display = 'flex';
+          row.style.flexDirection = 'column';
+          row.style.gap = '0.15rem';
+
+          const title = document.createElement('div');
+          title.textContent = label;
+          title.style.fontSize = '0.75rem';
+          title.style.fontWeight = '600';
+
+          const bars = document.createElement('div');
+          bars.style.display = 'flex';
+          bars.style.flexDirection = 'column';
+          bars.style.gap = '2px';
+
+          const pctB = (dataBaseline[idx] / maxVal) * 100;
+          const pctS = (dataSim[idx] / maxVal) * 100;
+
+          // Baseline Bar
+          const barB = document.createElement('div');
+          barB.style.width = `${pctB}%`;
+          barB.style.height = '8px';
+          barB.style.backgroundColor = '#CBD5E1';
+          barB.style.borderRadius = '2px';
+          barB.title = `Baseline: ${dataBaseline[idx]}`;
+
+          // Simulated Bar
+          const barS = document.createElement('div');
+          barS.style.width = `${pctS}%`;
+          barS.style.height = '8px';
+          barS.style.backgroundColor = color;
+          barS.style.borderRadius = '2px';
+          barS.title = `Simulated: ${dataSim[idx]}`;
+
+          bars.appendChild(barB);
+          bars.appendChild(barS);
+          row.appendChild(title);
+          row.appendChild(bars);
+          container.appendChild(row);
+        });
+
+        parent.appendChild(container);
+      }
+
+      function renderOfflineRiskVolumeFallback(canvasId, baselineVals, simVals, colorsList) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const parent = canvas.parentElement;
+        parent.innerHTML = '';
+
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.justifyContent = 'space-around';
+        container.style.height = '100%';
+        container.style.padding = '1.5rem 0';
+        container.style.alignItems = 'flex-end';
+
+        const renderStack = (title, vals) => {
+          const col = document.createElement('div');
+          col.style.display = 'flex';
+          col.style.flexDirection = 'column';
+          col.style.alignItems = 'center';
+          col.style.width = '35%';
+          col.style.height = '100%';
+          col.style.justifyContent = 'flex-end';
+
+          const stackContainer = document.createElement('div');
+          stackContainer.style.width = '100%';
+          stackContainer.style.height = '80%';
+          stackContainer.style.backgroundColor = 'var(--border-color)';
+          stackContainer.style.borderRadius = '4px';
+          stackContainer.style.display = 'flex';
+          stackContainer.style.flexDirection = 'column-reverse'; // Stack upwards
+          stackContainer.style.overflow = 'hidden';
+
+          const total = vals.reduce((a,b) => a+b, 0) || 5000;
+
+          vals.forEach((v, idx) => {
+            const block = document.createElement('div');
+            const h = (v / 5000) * 100;
+            block.style.height = `${h}%`;
+            block.style.width = '100%';
+            block.style.backgroundColor = colorsList[idx];
+            block.title = `${v} accounts`;
+            stackContainer.appendChild(block);
+          });
+
+          const label = document.createElement('span');
+          label.textContent = title;
+          label.style.fontSize = '0.8rem';
+          label.style.fontWeight = 'bold';
+          label.style.marginTop = '0.5rem';
+
+          const countLabel = document.createElement('span');
+          countLabel.textContent = `${total.toLocaleString()}`;
+          countLabel.style.fontSize = '0.7rem';
+          countLabel.style.color = 'var(--text-muted)';
+
+          col.appendChild(stackContainer);
+          col.appendChild(label);
+          col.appendChild(countLabel);
+          return col;
+        };
+
+        container.appendChild(renderStack('Baseline', baselineVals));
+        container.appendChild(renderStack('Simulated', simVals));
+        parent.appendChild(container);
+      }
+
+      // --- INITIALIZATION ---
+      function init() {
+        setupEventHandlers();
+        renderCohortMatrix();
+        initBaselineCharts();
+        initSimulatorCharts();
+        runSimulation();
+      }
+
+      function setupEventHandlers() {
+        // Theme button click
+        themeToggleBtn.addEventListener('click', () => {
+          const nextTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', nextTheme);
+          try {
+            localStorage.setItem('theme', nextTheme);
+          } catch (e) {}
+          updateThemeIcon(nextTheme);
+          recreateCharts();
+        });
+
+        // Tab switches
+        tabs.forEach(tab => {
+          tab.addEventListener('click', (e) => {
+            const targetTab = e.target.getAttribute('data-tab');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            tabPanes.forEach(p => p.classList.remove('active'));
+            
+            e.target.classList.add('active');
+            const targetPane = document.getElementById(targetTab);
+            if (targetPane) {
+              targetPane.classList.add('active');
+            }
+            activeTab = targetTab;
+
+            if (isChartAvailable) {
+              if (targetTab === 'overviewTab') {
+                setTimeout(() => {
+                  try {
+                    if (creditScoreChart) creditScoreChart.resize();
+                    if (latePaymentsChart) latePaymentsChart.resize();
+                    if (employmentMixChart) employmentMixChart.resize();
+                    if (ageBandChart) ageBandChart.resize();
+                  } catch (err) {}
+                }, 50);
+              } else if (targetTab === 'simulatorTab') {
+                setTimeout(() => {
+                  try {
+                    if (simScoreDistChart) simScoreDistChart.resize();
+                    if (simRiskVolumeChart) simRiskVolumeChart.resize();
+                  } catch (err) {}
+                }, 50);
+              }
+            }
+          });
+        });
+
+        // Simulator sliders
+        sliderScore.addEventListener('input', (e) => {
+          sliderScoreVal.textContent = e.target.value;
+          runSimulation();
+        });
+
+        sliderLate.addEventListener('input', (e) => {
+          sliderLateVal.textContent = e.target.value === '6' ? '6' : e.target.value;
+          runSimulation();
+        });
+
+        sliderDti.addEventListener('input', (e) => {
+          sliderDtiVal.textContent = e.target.value === '80' ? '80%' : `${e.target.value}%`;
+          runSimulation();
+        });
+
+        resetPolicyBtn.addEventListener('click', () => {
+          sliderScore.value = 300;
+          sliderScoreVal.textContent = '300';
+          sliderLate.value = 6;
+          sliderLateVal.textContent = '6';
+          sliderDti.value = 80;
+          sliderDtiVal.textContent = '80%';
+          runSimulation();
+        });
+
+        // Table controls
+        tableSearchInput.addEventListener('input', () => {
+          tablePage = 1;
+          filterAndRenderTable();
+        });
+
+        [filterRisk, filterEmployment, filterSimAction].forEach(f => {
+          f.addEventListener('change', () => {
+            tablePage = 1;
+            filterAndRenderTable();
+          });
+        });
+
+        btnPrevPage.addEventListener('click', () => {
+          if (tablePage > 1) {
+            tablePage--;
+            filterAndRenderTable();
+          }
+        });
+
+        btnNextPage.addEventListener('click', () => {
+          const maxPages = Math.ceil(currentFilteredDataset.length / tablePageSize);
+          if (tablePage < maxPages) {
+            tablePage++;
+            filterAndRenderTable();
+          }
+        });
+
+        document.querySelectorAll('.data-table th').forEach(th => {
+          th.addEventListener('click', () => {
+            const column = th.id.replace('th-', '');
+            document.querySelectorAll('.data-table th').forEach(h => {
+              h.classList.remove('sort-asc', 'sort-desc');
+            });
+            if (sortColumn === column) {
+              sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+              sortColumn = column;
+              sortDirection = 'asc';
+            }
+            th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+            filterAndRenderTable();
+          });
+        });
+
+        btnExportCSV.addEventListener('click', exportToCSV);
+      }
+
+      function updateThemeIcon(theme) {
+        if (!themeToggleBtn) return;
+        const sun = themeToggleBtn.querySelector('.sun-icon');
+        const moon = themeToggleBtn.querySelector('.moon-icon');
+        if (!sun || !moon) return;
+        if (theme === 'dark') {
+          sun.style.display = 'block';
+          moon.style.display = 'none';
+        } else {
+          sun.style.display = 'none';
+          moon.style.display = 'block';
+        }
+      }
+
+      function getChartThemeColors() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        return {
+          text: isDark ? '#94A3B8' : '#64748B',
+          grid: isDark ? '#1E293B' : '#E2E8F0',
+          navy: '#0F1E36',
+          teal: '#00A3A6',
+          gold: '#D8961B',
+          red: '#C53030'
+        };
+      }
+
+      function recreateCharts() {
+        if (isChartAvailable) {
+          try {
+            if (creditScoreChart) creditScoreChart.destroy();
+            if (latePaymentsChart) latePaymentsChart.destroy();
+            if (employmentMixChart) employmentMixChart.destroy();
+            if (ageBandChart) ageBandChart.destroy();
+            if (simScoreDistChart) simScoreDistChart.destroy();
+            if (simRiskVolumeChart) simRiskVolumeChart.destroy();
+          } catch (err) {}
+        }
+        initBaselineCharts();
+        initSimulatorCharts();
+        runSimulation();
+      }
+
+      // --- GRAPH RENDERING ---
+      function initBaselineCharts() {
+        const colors = getChartThemeColors();
+        
+        // 1. Credit Score Rates
+        const scoreLabels = ['Poor (<580)', 'Fair (580-669)', 'Good (670-739)', 'Very Good (740-799)', 'Exceptional (800+)'];
+        const scoreRates = [100, 54, 58, 53, 56]; // Fallback metrics aligned with PDF
+        if (dataset && dataset.length > 0) {
+          const bandsList = [
+            { check: c => c.creditScore < 580 },
+            { check: c => c.creditScore >= 580 && c.creditScore < 670 },
+            { check: c => c.creditScore >= 670 && c.creditScore < 740 },
+            { check: c => c.creditScore >= 740 && c.creditScore < 800 },
+            { check: c => c.creditScore >= 800 }
+          ];
+          bandsList.forEach((b, idx) => {
+            const cohort = dataset.filter(b.check);
+            const hr = cohort.filter(c => c.highRiskFlag).length;
+            scoreRates[idx] = cohort.length ? Math.round((hr / cohort.length) * 100) : 0;
+          });
+        }
+
+        // 2. Late Payment Rates
+        const lateRates = [53, 52, 53, 55, 97, 98, 99];
+        if (dataset && dataset.length > 0) {
+          for (let i = 0; i <= 6; i++) {
+            const cohort = dataset.filter(c => c.latePayments === i);
+            const hr = cohort.filter(c => c.highRiskFlag).length;
+            lateRates[i] = cohort.length ? Math.round((hr / cohort.length) * 100) : 0;
+          }
+        }
+
+        // 3. Employment Mix
+        const empLabels = ['Employed', 'Self-Employed', 'Unemployed'];
+        let empCounts = [1750, 1650, 1600];
+        if (dataset && dataset.length > 0) {
+          empCounts = empLabels.map(s => dataset.filter(c => c.employmentStatus === s).length);
+        }
+
+        // 4. Age Rates
+        const ageLabels = ['18-25', '26-35', '36-45', '46-55', '56-65', '66+'];
+        const ageRates = [78.5, 76.0, 77.0, 76.3, 77.1, 76.1];
+        if (dataset && dataset.length > 0) {
+          const ageBands = [
+            { check: c => c.age >= 18 && c.age <= 25 },
+            { check: c => c.age >= 26 && c.age <= 35 },
+            { check: c => c.age >= 36 && c.age <= 45 },
+            { check: c => c.age >= 46 && c.age <= 55 },
+            { check: c => c.age >= 56 && c.age <= 65 },
+            { check: c => c.age >= 66 }
+          ];
+          ageBands.forEach((b, idx) => {
+            const cohort = dataset.filter(b.check);
+            const hr = cohort.filter(c => c.highRiskFlag).length;
+            ageRates[idx] = cohort.length ? Math.round((hr / cohort.length) * 100) : 0;
+          });
+        }
+
+        // Force Offline Fallback if CDN failed, OR if browser fails to instantiate Chart constructor
+        try {
+          if (!isChartAvailable) {
+            renderOfflineChartFallback('creditScoreChart', scoreLabels, scoreRates, colors.navy);
+            renderOfflineChartFallback('latePaymentsChart', ['0','1','2','3','4','5','6'], lateRates, colors.red);
+            renderOfflineDonutFallback('employmentMixChart', empLabels, empCounts, [colors.navy, colors.teal, colors.gold]);
+            renderOfflineChartFallback('ageBandChart', ageLabels, ageRates, colors.gold);
+            return;
+          }
+
+          const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: colors.text }, grid: { display: false } },
+              y: { ticks: { color: colors.text, callback: v => v + '%' }, grid: { color: colors.grid } }
+            }
+          };
+
+          creditScoreChart = new Chart(document.getElementById('creditScoreChart').getContext('2d'), {
+            type: 'bar',
+            data: { labels: scoreLabels, datasets: [{ data: scoreRates, backgroundColor: colors.navy, borderRadius: 4, maxBarThickness: 45 }] },
+            options: chartOptions
+          });
+
+          latePaymentsChart = new Chart(document.getElementById('latePaymentsChart').getContext('2d'), {
+            type: 'bar',
+            data: { labels: ['0','1','2','3','4','5','6'], datasets: [{ data: lateRates, backgroundColor: colors.red, borderRadius: 4, maxBarThickness: 40 }] },
+            options: chartOptions
+          });
+
+          employmentMixChart = new Chart(document.getElementById('employmentMixChart').getContext('2d'), {
+            type: 'doughnut',
+            data: { labels: empLabels, datasets: [{ data: empCounts, backgroundColor: [colors.navy, colors.teal, colors.gold] }] },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { position: 'right', labels: { color: colors.text } } },
+              cutout: '65%'
+            }
+          });
+
+          ageBandChart = new Chart(document.getElementById('ageBandChart').getContext('2d'), {
+            type: 'bar',
+            data: { labels: ageLabels, datasets: [{ data: ageRates, backgroundColor: colors.gold, borderRadius: 4, maxBarThickness: 40 }] },
+            options: chartOptions
+          });
+
+        } catch (err) {
+          console.error('Chart.js initialization failed. Redirecting to HTML CSS Fallback graphs.', err);
+          renderOfflineChartFallback('creditScoreChart', scoreLabels, scoreRates, colors.navy);
+          renderOfflineChartFallback('latePaymentsChart', ['0','1','2','3','4','5','6'], lateRates, colors.red);
+          renderOfflineDonutFallback('employmentMixChart', empLabels, empCounts, [colors.navy, colors.teal, colors.gold]);
+          renderOfflineChartFallback('ageBandChart', ageLabels, ageRates, colors.gold);
+        }
+      }
+
+      function initSimulatorCharts() {
+        if (!isChartAvailable) return;
+        const colors = getChartThemeColors();
+        const commonOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { color: colors.text } } },
+          scales: {
+            x: { ticks: { color: colors.text }, grid: { display: false } },
+            y: { ticks: { color: colors.text }, grid: { color: colors.grid } }
+          }
+        };
+
+        try {
+          simScoreDistChart = new Chart(document.getElementById('simScoreDistChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: ['Poor (<580)', 'Fair (580-669)', 'Good (670-739)', 'Very Good (740-799)', 'Exceptional (800+)'],
+              datasets: [
+                { label: 'Baseline', data: [0, 0, 0, 0, 0], backgroundColor: '#CBD5E1', borderRadius: 4 },
+                { label: 'Simulated', data: [0, 0, 0, 0, 0], backgroundColor: colors.navy, borderRadius: 4 }
+              ]
+            },
+            options: commonOptions
+          });
+
+          simRiskVolumeChart = new Chart(document.getElementById('simRiskVolumeChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: ['Baseline', 'Simulated'],
+              datasets: [
+                { label: 'Low Risk', data: [0, 0], backgroundColor: colors.teal },
+                { label: 'High Risk', data: [0, 0], backgroundColor: '#E2E8F0' },
+                { label: 'Fraud', data: [0, 0], backgroundColor: colors.red }
+              ]
+            },
+            options: {
+              ...commonOptions,
+              scales: { x: { stacked: true }, y: { stacked: true } }
+            }
+          });
+        } catch (err) {
+          console.error('Simulator Chart.js init failed. Custom css charts will trigger.', err);
+        }
+      }
+
+      // --- RISK COHORT MAP ---
+      function renderCohortMatrix() {
+        const matrixBody = document.getElementById('matrixBody');
+        if (!matrixBody) return;
+        matrixBody.innerHTML = '';
+        
+        const scoreBands = [
+          { name: 'Exceptional (800+)', check: c => c.creditScore >= 800 },
+          { name: 'Very Good (740-799)', check: c => c.creditScore >= 740 && c.creditScore < 800 },
+          { name: 'Good (670-739)', check: c => c.creditScore >= 670 && c.creditScore < 740 },
+          { name: 'Fair (580-669)', check: c => c.creditScore >= 580 && c.creditScore < 670 },
+          { name: 'Poor (<580)', check: c => c.creditScore < 580 }
+        ];
+
+        scoreBands.forEach(band => {
+          const tr = document.createElement('tr');
+          const thY = document.createElement('td');
+          thY.className = 'matrix-th-y';
+          thY.textContent = band.name;
+          tr.appendChild(thY);
+
+          for (let late = 0; late <= 6; late++) {
+            let rate = 50;
+            let len = 100;
+            
+            if (dataset && dataset.length > 0) {
+              const cohort = dataset.filter(c => band.check(c) && c.latePayments === late);
+              const hr = cohort.filter(c => c.highRiskFlag).length;
+              rate = cohort.length ? Math.round((hr / cohort.length) * 100) : 0;
+              len = cohort.length;
+            }
+            
+            let riskColor = 'risk-cat-low';
+            if (rate >= 90) riskColor = 'risk-cat-veryhigh';
+            else if (rate >= 75) riskColor = 'risk-cat-high';
+            else if (rate >= 50) riskColor = 'risk-cat-medhigh';
+            else if (rate >= 30) riskColor = 'risk-cat-medium';
+
+            const td = document.createElement('td');
+            td.className = `matrix-cell ${riskColor}`;
+            td.innerHTML = `
+              <div class="matrix-cell-rate">${rate}%</div>
+              <div class="matrix-cell-count">N=${len}</div>
+            `;
+
+            td.addEventListener('click', () => {
+              let minS = 300;
+              if (band.name.startsWith('Exceptional')) minS = 800;
+              else if (band.name.startsWith('Very Good')) minS = 740;
+              else if (band.name.startsWith('Good')) minS = 670;
+              else if (band.name.startsWith('Fair')) minS = 580;
+              
+              sliderScore.value = minS;
+              sliderScoreVal.textContent = minS;
+              sliderLate.value = late;
+              sliderLateVal.textContent = late;
+              runSimulation();
+              
+              const tabSim = document.querySelector('[data-tab="simulatorTab"]');
+              if (tabSim) tabSim.click();
+            });
+
+            tr.appendChild(td);
+          }
+          matrixBody.appendChild(tr);
+        });
+      }
+
+      // --- SIMULATOR CONTROL ---
+      function runSimulation() {
+        if (!dataset || dataset.length === 0) return;
+
+        const minScore = parseInt(sliderScore.value);
+        const maxLate = parseInt(sliderLate.value);
+        const maxDti = parseInt(sliderDti.value);
+
+        const baselineCount = dataset.length;
+        const baselineHighRisk = dataset.filter(c => c.highRiskFlag).length;
+        const baselineFraud = dataset.filter(c => c.fraudFlag).length;
+
+        let approved = [];
+        dataset.forEach(c => {
+          if (c.creditScore >= minScore && c.latePayments <= maxLate && c.dti <= maxDti) {
+            c.simulatedAction = 'Approved';
+            approved.push(c);
+          } else {
+            c.simulatedAction = 'Rejected';
+          }
+        });
+
+        const approvedCount = approved.length;
+        const approvalRate = approvedCount / baselineCount;
+        const approvedHighRisk = approved.filter(c => c.highRiskFlag).length;
+        const approvedLowRisk = approvedCount - approvedHighRisk;
+        const approvedFraud = approved.filter(c => c.fraudFlag).length;
+
+        const approvedRiskRate = approvedCount ? approvedHighRisk / approvedCount : 0;
+        const approvedFraudRate = approvedCount ? approvedFraud / approvedCount : 0;
+        const approvedScoreAvg = approvedCount ? approved.reduce((sum,c)=>sum+c.creditScore, 0)/approvedCount : 0;
+        const approvedDtiAvg = approvedCount ? approved.reduce((sum,c)=>sum+c.dti, 0)/approvedCount : 0;
+
+        // Financial Yield NPV
+        const profitVal = approvedLowRisk * PROFIT_LOW_RISK;
+        const defaultLoss = (approvedHighRisk - approvedFraud) * LOSS_HIGH_RISK;
+        const fraudLoss = approvedFraud * LOSS_FRAUD;
+        const netMarginValue = profitVal + defaultLoss + fraudLoss;
+
+        // Update KPI card text
+        updateKpiCards({
+          approvedCount, baselineCount,
+          approvedRiskRate, approvedScoreAvg,
+          approvedDtiAvg, approvedFraudRate
+        });
+
+        // Update Simulator elements
+        simApprovalRate.textContent = `${(approvalRate * 100).toFixed(1)}%`;
+        simApprovedCount.textContent = approvedCount.toLocaleString();
+        simDefaultRate.textContent = `${(approvedRiskRate * 100).toFixed(1)}%`;
+        simFraudRate.textContent = `${(approvedFraudRate * 100).toFixed(1)}%`;
+        simNetMargin.textContent = `${netMarginValue < 0 ? '-' : ''}$${Math.abs(netMarginValue).toLocaleString()}`;
+
+        const financialCard = document.querySelector('.financial-card');
+        if (financialCard) {
+          if (netMarginValue >= 0) {
+            financialCard.style.background = 'linear-gradient(135deg, #1A4D32 0%, #153322 100%)';
+          } else {
+            financialCard.style.background = 'linear-gradient(135deg, var(--primary-navy) 0%, #1A2F50 100%)';
+          }
+        }
+
+        // Dynamic Strategic Text
+        updateRecommendationText(minScore, maxLate, maxDti, approvalRate, approvedRiskRate, approvedFraudRate, netMarginValue);
+
+        // Calculate distribution sets for comparison
+        const scoreBandsList = [
+          c => c.creditScore < 580,
+          c => c.creditScore >= 580 && c.creditScore < 670,
+          c => c.creditScore >= 670 && c.creditScore < 740,
+          c => c.creditScore >= 740 && c.creditScore < 800,
+          c => c.creditScore >= 800
+        ];
+        const baselineCounts = scoreBandsList.map(check => dataset.filter(check).length);
+        const simCounts = scoreBandsList.map(check => approved.filter(check).length);
+
+        const bLow = dataset.filter(c => !c.highRiskFlag).length;
+        const bHigh = dataset.filter(c => c.highRiskFlag && !c.fraudFlag).length;
+        const bFraud = dataset.filter(c => c.fraudFlag).length;
+
+        const sLow = approved.filter(c => !c.highRiskFlag).length;
+        const sHigh = approved.filter(c => c.highRiskFlag && !c.fraudFlag).length;
+        const sFraud = approved.filter(c => c.fraudFlag).length;
+
+        const colors = getChartThemeColors();
+
+        // Safe rendering update for simulator charts
+        try {
+          if (!isChartAvailable || !simScoreDistChart || !simRiskVolumeChart) {
+            renderOfflineComparisonFallback('simScoreDistChart', ['Poor (<580)','Fair (580-669)','Good (670-739)','Very Good (740-799)','Exceptional (800+)'], baselineCounts, simCounts, colors.navy);
+            renderOfflineRiskVolumeFallback('simRiskVolumeChart', [bLow, bHigh, bFraud], [sLow, sHigh, sFraud], [colors.teal, '#E2E8F0', colors.red]);
+          } else {
+            simScoreDistChart.data.datasets[0].data = baselineCounts;
+            simScoreDistChart.data.datasets[1].data = simCounts;
+            simScoreDistChart.update('none');
+
+            simRiskVolumeChart.data.datasets[0].data = [bLow, sLow];
+            simRiskVolumeChart.data.datasets[1].data = [bHigh, sHigh];
+            simRiskVolumeChart.data.datasets[2].data = [bFraud, sFraud];
+            simRiskVolumeChart.update('none');
+          }
+        } catch (err) {
+          console.error("Chart updates failed. Redirecting to inline CSS chart updates.", err);
+          renderOfflineComparisonFallback('simScoreDistChart', ['Poor (<580)','Fair (580-669)','Good (670-739)','Very Good (740-799)','Exceptional (800+)'], baselineCounts, simCounts, colors.navy);
+          renderOfflineRiskVolumeFallback('simRiskVolumeChart', [bLow, bHigh, bFraud], [sLow, sHigh, sFraud], [colors.teal, '#E2E8F0', colors.red]);
+        }
+
+        filterAndRenderTable();
+      }
+
+      function updateKpiCards(data) {
+        if (kpiTotalCustomers) kpiTotalCustomers.textContent = data.approvedCount.toLocaleString();
+        if (kpiTotalCustomersChange) setKpiChange(kpiTotalCustomersChange, data.approvedCount - data.baselineCount, '', 'Rejected');
+
+        if (kpiHighRiskShare) kpiHighRiskShare.textContent = `${(data.approvedRiskRate * 100).toFixed(1)}%`;
+        if (kpiHighRiskShareChange) setKpiChange(kpiHighRiskShareChange, (data.approvedRiskRate * 100) - 76.6, '%', 'Better', true);
+
+        if (kpiAvgScore) kpiAvgScore.textContent = Math.round(data.approvedScoreAvg);
+        if (kpiAvgScoreChange) setKpiChange(kpiAvgScoreChange, data.approvedScoreAvg - 599, '', 'Higher');
+
+        if (kpiAvgDti) kpiAvgDti.textContent = `${data.approvedDtiAvg.toFixed(1)}%`;
+        if (kpiAvgDtiChange) setKpiChange(kpiAvgDtiChange, data.approvedDtiAvg - 29.7, '%', 'Lower', true);
+
+        if (kpiFraudIncidence) kpiFraudIncidence.textContent = `${(data.approvedFraudRate * 100).toFixed(1)}%`;
+        if (kpiFraudIncidenceChange) setKpiChange(kpiFraudIncidenceChange, (data.approvedFraudRate * 100) - 2.9, '%', 'Better', true);
+      }
+
+      function setKpiChange(el, diff, unit, suffix, inverse) {
+        if (!el) return;
+        if (Math.abs(diff) < 0.05) {
+          el.className = 'kpi-change neutral';
+          el.textContent = 'Baseline';
+          return;
+        }
+        const isPos = diff > 0;
+        const isGood = inverse ? !isPos : isPos;
+        el.className = `kpi-change ${isGood ? 'positive' : 'negative'}`;
+        el.innerHTML = `${isGood ? '▲' : '▼'} ${isPos ? '+' : ''}${diff.toFixed(1)}${unit} ${suffix}`;
+      }
+
+      function updateRecommendationText(minScore, maxLate, maxDti, approvalRate, riskRate, fraudRate, netMargin) {
+        if (!dynamicRecommendationText) return;
+        let text = '';
+        if (minScore === 300 && maxLate === 6 && maxDti === 80) {
+          text = `<strong>Portfolio Baseline Alert:</strong> Underwriting rules accept all applicants, yielding a critical <strong>76.6% High-Risk Share</strong> and <strong>2.9% Fraud Incidence</strong>. Default impairments trigger a loss of <strong>-$2,414,000</strong>. <em>Action Required: Restrict Poor score and Late Payment clusters.</em>`;
+        } else if (approvalRate === 0) {
+          text = `<strong>Operational Lock:</strong> The active limits approve 0 applications. Default risk is eliminated, but lending yield falls to zero. <em>Recommendation: Relax scoring floors.</em>`;
+        } else {
+          const scOk = minScore >= 580;
+          const lpOk = maxLate <= 3;
+          if (scOk && lpOk) {
+            if (netMargin > 700000) {
+              text = `<strong>Pareto-Optimal Frontier Achieved:</strong> Setting Credit Score floor ≥ <strong>${minScore}</strong> and Late Payments ≤ <strong>${maxLate}</strong> successfully rejects 96% of historical fraud and 80% of defaulting accounts. This yields an optimal approved margin of <strong>$${netMargin.toLocaleString()}</strong> (a net swing of <strong>+$${(netMargin + 2414000).toLocaleString()}</strong>). <em>This is the recommended strategic cut.</em>`;
+            } else {
+              text = `<strong>Highly Conservative Stance:</strong> Portfolio risk indicators are fully secure, minimizing default. However, tight parameters approved only <strong>${(approvalRate * 100).toFixed(1)}%</strong> of loans, rejecting <strong>$${Math.round((1 - approvalRate) * 1170 * PROFIT_LOW_RISK).toLocaleString()}</strong> in low-risk capital yields. <em>Recommendation: Consider lifting constraints slightly.</em>`;
+            }
+          } else if (scOk && !lpOk) {
+            text = `<strong>Sub-Optimal Yield (Late Payment Risk):</strong> Credit score limits are correct, but accepting late payment history exposes the portfolio to critical default spikes. Expected Net Margin is suppressed to <strong>$${netMargin.toLocaleString()}</strong>. <em>Recommendation: Caps late payments to 3 or fewer.</em>`;
+          } else if (!scOk && lpOk) {
+            text = `<strong>Sub-Optimal Yield (Poor Credit Score Exposure):</strong> Restricting late payment counts removes behavioral defaults, but approving Poor credit scores (&lt;580) leaves the portfolio exposed to structural default rates. <em>Recommendation: Implement credit score floor of 580 immediately.</em>`;
+          } else {
+            text = `<strong>High Volatility Stance:</strong> Underwriting bounds are too loose. Approval rates remain high but write-offs yield a negative net margin of <strong>$${netMargin.toLocaleString()}</strong>. <em>Action: Establish strict scoring cutoffs.</em>`;
+          }
+        }
+        dynamicRecommendationText.innerHTML = text;
+      }
+
+      // --- ACCOUNT EXPLORER TABLE ---
+      function filterAndRenderTable() {
+        if (!tableSearchInput) return;
+        const search = tableSearchInput.value.toLowerCase().trim();
+        const risk = filterRisk.value;
+        const emp = filterEmployment.value;
+        const act = filterSimAction.value;
+
+        currentFilteredDataset = dataset.filter(c => {
+          const searchMatch = c.id.toLowerCase().includes(search) || String(c.creditScore).includes(search);
+          const riskMatch = risk === 'all' || (risk === 'high' && c.highRiskFlag) || (risk === 'low' && !c.highRiskFlag);
+          const empMatch = emp === 'all' || c.employmentStatus === emp;
+          const actMatch = act === 'all' || c.simulatedAction.toLowerCase() === act;
+          return searchMatch && riskMatch && empMatch && actMatch;
+        });
+
+        currentFilteredDataset.sort((a, b) => {
+          let valA = a[sortColumn];
+          let valB = b[sortColumn];
+          if (sortColumn === 'id') {
+            valA = parseInt(a.id.substring(1));
+            valB = parseInt(b.id.substring(1));
+          }
+          if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+          if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+          return 0;
+        });
+
+        renderTableRows();
+      }
+
+      function renderTableRows() {
+        if (!explorerTableBody) return;
+        explorerTableBody.innerHTML = '';
+        const total = currentFilteredDataset.length;
+        const maxPages = Math.ceil(total / tablePageSize) || 1;
+        if (tablePage > maxPages) tablePage = maxPages;
+
+        const start = (tablePage - 1) * tablePageSize;
+        const end = Math.min(start + tablePageSize, total);
+
+        if (paginationInfo) {
+          paginationInfo.textContent = total > 0 
+            ? `Showing ${start + 1} to ${end} of ${total.toLocaleString()} entries`
+            : 'Showing 0 to 0 of 0 entries';
+        }
+
+        if (btnPrevPage) btnPrevPage.disabled = tablePage === 1;
+        if (btnNextPage) btnNextPage.disabled = tablePage === maxPages;
+
+        const pageData = currentFilteredDataset.slice(start, end);
+
+        if (pageData.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">No matching accounts. Adjust search criteria.</td>`;
+          explorerTableBody.appendChild(tr);
+          return;
+        }
+
+        pageData.forEach(c => {
+          const tr = document.createElement('tr');
+          const rBadge = c.highRiskFlag ? '<span class="badge badge-risk-high">High Risk</span>' : '<span class="badge badge-risk-low">Low Risk</span>';
+          const fBadge = c.fraudFlag ? '<span class="badge badge-fraud">Fraud</span>' : '<span style="color: var(--text-muted); font-size: 0.85rem;">-</span>';
+          const aBadge = c.simulatedAction === 'Approved'
+            ? '<span class="badge badge-risk-low" style="background-color: rgba(47,133,90,0.15); border:1px solid var(--risk-low);">Approved</span>'
+            : '<span class="badge badge-risk-high" style="background-color: rgba(197,48,48,0.15); border:1px solid var(--risk-high);">Rejected</span>';
+
+          tr.innerHTML = `
+            <td style="font-weight: 600; font-family: 'Outfit'; color: var(--primary-navy);">${c.id}</td>
+            <td>${c.age}</td>
+            <td>${c.employmentStatus}</td>
+            <td style="font-weight: 600;">${c.creditScore}</td>
+            <td>${c.dti}%</td>
+            <td>${c.latePayments}</td>
+            <td>${rBadge}</td>
+            <td>${fBadge}</td>
+            <td>${aBadge}</td>
+          `;
+          explorerTableBody.appendChild(tr);
+        });
+      }
+
+      function exportToCSV() {
+        if (currentFilteredDataset.length === 0) return;
+        const headers = ['ID', 'Age', 'Employment', 'CreditScore', 'DTI', 'LatePayments', 'HighRisk', 'Fraud', 'SimAction'];
+        const rows = currentFilteredDataset.map(c => [c.id, c.age, c.employmentStatus, c.creditScore, c.dti, c.latePayments, c.highRiskFlag, c.fraudFlag, c.simulatedAction]);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `portfolio_export_score${sliderScore.value}_late${sliderLate.value}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      init();
+    });
+  </script>
+</body>
+</html>
