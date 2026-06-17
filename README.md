@@ -2,8 +2,6 @@
 
 **A retail banking credit portfolio was losing $2.4M annually with no underwriting controls in place. This dashboard identifies a two-rule policy change that converts that loss into a $1.1M+ gain — a $3.5M swing — and lets a decision-maker test it interactively before touching a live book.**
 
-[**▶ View Live Dashboard**](./index.html) — single HTML file, opens in any browser, no install required.
-
 ---
 
 ## The Business Problem
