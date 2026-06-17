@@ -12,7 +12,7 @@
 
 ## Project Overview
 
-A McKinsey-style portfolio analytics dashboard for a retail banking credit book. Every chart, metric, and financial projection responds in real-time to underwriting policy changes — enabling analysts to stress-test configurations before applying them to a live portfolio.
+A portfolio analytics dashboard for a retail banking credit book. Every chart, metric, and financial projection responds in real-time to underwriting policy changes — enabling analysts to stress-test configurations before applying them to a live portfolio.
 
 ---
 
